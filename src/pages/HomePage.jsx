@@ -4,12 +4,14 @@ import { useAuth } from "../hooks/use-auth";
 import { removeUser } from "../store/slices/userSlice";
 import { useDispatch } from "react-redux";
 import { setUser } from "../store/slices/userSlice";
+import Header from "../components/Header";
+import ToDo from "../components/ToDo";
 
 const HomePage = () => {
   const [loading, isLoading] = useState(true);
 
   const dispatch = useDispatch();
-  const { isAuth, email, role } = useAuth();
+  const { isAuth, email, role, name } = useAuth();
   const handleLogout = () => {
     dispatch(removeUser());
     localStorage.removeItem("user");
@@ -35,19 +37,19 @@ const HomePage = () => {
   if (!isAuth) {
     return <Navigate to="/login" replace />;
   }
-
   return (
-    <header className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold mb-6">
-        Добро пожаловать,{role} {email}! 
-      </h1>
-      <button
-        onClick={handleLogout}
-        className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded-lg transition"
-      >
-        Выйти
-      </button>
-    </header>
+    <>
+      <Header
+        isAuth={isAuth}
+        email={email}
+        role={role}
+        handleLogout={handleLogout}
+        userName={name}
+      />
+      <main>
+        <ToDo />
+      </main>
+    </>
   );
 };
 

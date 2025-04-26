@@ -22,13 +22,14 @@ const Login = () => {
         throw new Error("User data not found in database");
       }
       const userData = userDoc.data();
-
+      console.log("userD", userData);
       dispatch(
         setUser({
           email: user.email,
           id: user.uid,
           token: user.accessToken,
           role: userData.role,
+          name: userData.name,
         })
       );
 
@@ -39,6 +40,7 @@ const Login = () => {
           id: user.uid,
           token: user.accessToken,
           role: userData.role,
+          name: userData.name,
         })
       );
 
@@ -51,7 +53,7 @@ const Login = () => {
 
   return (
     <>
-      <Form title="Войти" handleClick={handleLogin} />
+      <Form title="Log In" handleClick={handleLogin} />
       {error && <p style={{ color: "red" }}>{error}</p>}
     </>
   );

@@ -5,6 +5,7 @@ const initialState = {
   token: null,
   role: null,
   isAuth: false,
+  name: null,
 };
 
 const userSlice = createSlice({
@@ -17,6 +18,7 @@ const userSlice = createSlice({
       state.token = action.payload.token;
       state.role = action.payload.role;
       state.isAuth = true;
+      state.name = action.payload.name;
     },
     removeUser(state) {
       state.email = null;
@@ -24,6 +26,7 @@ const userSlice = createSlice({
       state.token = null;
       state.role = null;
       state.isAuth = false;
+      state.name = null;
     },
   },
 });
