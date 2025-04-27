@@ -17,6 +17,10 @@ const ToDo = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState({});
   const [isEditTextToDo, setIsEditTextToDo] = useState(null);
+  const [editingTask, setEditingTask] = useState({
+    toDoId: null,
+    taskIndex: null,
+  });
 
   useEffect(() => {
     const fetchToDos = async () => {
@@ -83,7 +87,44 @@ const ToDo = () => {
     }
   };
 
-  const handleEditTaskText = (toDoId, taskId) => {};
+  const handleEditTaskText = (toDoId, taskIndex) => {
+    setEditingTask({ toDoId, taskIndex });
+  };
+
+  const handleSaveTaskText = async (toDoId, taskIndex) => {
+    try {
+      const toDoDocRef = doc(db, "toDoList", toDoId);
+      const toDoDoc = await getDoc(toDoDocRef);
+
+      if (!toDoDoc.exists()) {
+        throw new Error("Список задач не знайдено");
+      }
+
+      const tasks = toDoDoc.data().tasks;
+      const updatedTask = taskTexts[toDoId];
+
+      if (!updatedTask || !updatedTask.name.trim()) {
+        alert("Назва задачі не може бути порожньою");
+        return;
+      }
+
+      tasks[taskIndex] = updatedTask;
+
+      await updateDoc(toDoDocRef, { tasks });
+
+      setToDoList((prev) =>
+        prev.map((toDo) => (toDo.id === toDoId ? { ...toDo, tasks } : toDo))
+      );
+
+      setEditingTask({ toDoId: null, taskIndex: null });
+      setTaskTexts((prev) => ({
+        ...prev,
+        [toDoId]: { name: "", description: "" },
+      }));
+    } catch (error) {
+      console.error("Помилка при збереженні редагування задачі:", error);
+    }
+  };
 
   const addNewToDo = async (e) => {
     e.preventDefault();
@@ -236,26 +277,75 @@ const ToDo = () => {
               )}
             </div>
 
-            <div className="space-y-2 mb-4">
+            <div className="space-y-2 mb-4  p-2 w-80 ">
               {toDo.tasks.length > 0 ? (
                 toDo.tasks.map((task, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start justify-between border-b py-2"
-                  >
-                    <div className="flex flex-col items-start">
-                      <span className="font-semibold">{task.name}</span>
-                      <span className="text-gray-500 text-sm">
-                        {task.description}
-                      </span>
-                    </div>
-
-                    <button
-                      className="w-8 h-8 flex items-center justify-center rounded-full text-white bg-green-600 text-lg"
-                      onClick={() => handleEditTaskText(toDo.id, task.id)}
-                    >
-                      ✎
-                    </button>
+                  <div className="flex flex-col gap-2 border-b py-2">
+                    {editingTask.toDoId === toDo.id &&
+                    editingTask.taskIndex === index ? (
+                      <>
+                        <input
+                          type="text"
+                          value={taskTexts[toDo.id]?.name || ""}
+                          onChange={(e) =>
+                            setTaskTexts((prev) => ({
+                              ...prev,
+                              [toDo.id]: {
+                                ...prev[toDo.id],
+                                name: e.target.value,
+                              },
+                            }))
+                          }
+                          className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                          placeholder="Назва задачі"
+                        />
+                        <input
+                          type="text"
+                          value={taskTexts[toDo.id]?.description || ""}
+                          onChange={(e) =>
+                            setTaskTexts((prev) => ({
+                              ...prev,
+                              [toDo.id]: {
+                                ...prev[toDo.id],
+                                description: e.target.value,
+                              },
+                            }))
+                          }
+                          className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                          placeholder="Опис задачі"
+                        />
+                        <button
+                          className="w-8 h-8 flex items-center justify-center rounded-full text-white bg-green-600 text-lg self-end"
+                          onClick={() => handleSaveTaskText(toDo.id, index)}
+                        >
+                          ✓
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex items-start justify-between">
+                        <div className="flex flex-col items-start">
+                          <span className="font-semibold">{task.name}</span>
+                          <span className="text-gray-500 text-sm">
+                            {task.description}
+                          </span>
+                        </div>
+                        <button
+                          className="w-8 h-8 flex items-center justify-center rounded-full text-white bg-green-600 text-lg"
+                          onClick={() => {
+                            handleEditTaskText(toDo.id, index);
+                            setTaskTexts((prev) => ({
+                              ...prev,
+                              [toDo.id]: {
+                                name: task.name,
+                                description: task.description,
+                              },
+                            }));
+                          }}
+                        >
+                          ✎
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
