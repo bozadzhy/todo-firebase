@@ -9,10 +9,10 @@ import ToDo from "../components/ToDo";
 import Container from "../components/Container";
 
 const HomePage = () => {
-  const [loading, isLoading] = useState(true);
-
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
   const { isAuth, email, role, name } = useAuth();
+  
   const handleLogout = () => {
     dispatch(removeUser());
     localStorage.removeItem("user");
@@ -28,7 +28,7 @@ const HomePage = () => {
         console.error("Failed to parse user data", e);
       }
     }
-    isLoading(false);
+    setLoading(false);
   }, [dispatch]);
 
   if (loading) {
