@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FC } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../hooks/use-auth";
 import ToDoForm from "./ToDoForm";
 import ToDoList from "./ToDoList";
+import { ToDo as ToDoType } from "./TaskForm";
+import { User} from "../store/slices/userSlice";
 
-const ToDo = () => {
+const ToDo: FC = () => {
   const { role } = useAuth();
-  const [toDoList, setToDoList] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
+  
+  const [toDoList, setToDoList] = useState<ToDoType[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
   useEffect(() => {
     const fetchToDos = async () => {
@@ -16,10 +19,10 @@ const ToDo = () => {
         const toDoCollectionRef = collection(db, "toDoList");
         const toDoSnapshot = await getDocs(toDoCollectionRef);
 
-        const toDos = toDoSnapshot.docs.map((doc) => ({
+        const toDos: ToDoType[] = toDoSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        })) as ToDoType[];
         setToDoList(toDos);
       } catch (error) {
         console.error("Помилка при завантаженні списків задач:", error);
@@ -35,10 +38,10 @@ const ToDo = () => {
         const usersCollectionRef = collection(db, "users");
         const usersSnapshot = await getDocs(usersCollectionRef);
 
-        const users = usersSnapshot.docs.map((doc) => ({
+        const users: User[] = usersSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        })) as User[];
         setAllUsers(users);
       } catch (error) {
         console.error("Помилка при завантаженні користувачів:", error);
@@ -55,7 +58,7 @@ const ToDo = () => {
         toDoList={toDoList}
         setToDoList={setToDoList}
         allUsers={allUsers}
-        role={role}
+        role={role as string}
       />
     </div>
   );

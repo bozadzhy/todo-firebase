@@ -1,15 +1,16 @@
-import React from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
-import Login from "../components/LogIn";
+import SignUp from "../components/SignUp";
 
-const LoginPage = () => {
+const Register: FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <div className="w-full max-w-md bg-white p-6 rounded-xl shadow-md">
-        <Login />
+        <SignUp />
         <p className="text-center mt-4 text-gray-600">
-          <Link to="/register" className="text-blue-500 hover:underline">
-            Реєстрація
+          Вже зареєстровані?
+          <Link to="/login" className="text-blue-500 hover:underline">
+            Ввійти
           </Link>
         </p>
       </div>
@@ -17,4 +18,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default Register;

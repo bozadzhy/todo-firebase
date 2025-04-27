@@ -1,9 +1,19 @@
-import React from "react";
+import React, { FC } from "react";
 import TaskItem from "./TaskItem";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { ToDo, Task } from "./TaskForm";
 
-const TaskList = ({
+interface TaskListProps {
+  toDo: ToDo;
+  setToDoList: React.Dispatch<React.SetStateAction<ToDo[]>>;
+  role: string;
+  setTaskTexts: React.Dispatch<React.SetStateAction<Task>>;
+  setEditingTask: React.Dispatch<React.SetStateAction<number | null>>; 
+  editingTask: number | null; 
+}
+
+const TaskList: FC<TaskListProps> = ({
   toDo,
   setToDoList,
   role,
@@ -11,7 +21,7 @@ const TaskList = ({
   setEditingTask,
   editingTask,
 }) => {
-  const handleToggleTask = async (taskIndex) => {
+  const handleToggleTask = async (taskIndex: number) => {
     try {
       const toDoDocRef = doc(db, "toDoList", toDo.id);
       const toDoDoc = await getDoc(toDoDocRef);
@@ -37,7 +47,7 @@ const TaskList = ({
     }
   };
 
-  const handleDeleteTask = async (taskIndex) => {
+  const handleDeleteTask = async (taskIndex: number) => {
     try {
       const toDoDocRef = doc(db, "toDoList", toDo.id);
       const toDoDoc = await getDoc(toDoDocRef);
@@ -61,7 +71,7 @@ const TaskList = ({
   };
 
   return (
-    <div className="space-y-2 mb-4 p-2 w-80 ">
+    <div className="space-y-2 mb-4 p-2 w-80">
       {toDo.tasks.length > 0 ? (
         toDo.tasks.map((task, index) => (
           <TaskItem

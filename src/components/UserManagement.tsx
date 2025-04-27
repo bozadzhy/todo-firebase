@@ -1,15 +1,26 @@
-import React from "react";
+import React, {FC} from "react";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
-const UserManagement = ({
+import { User } from "../store/slices/userSlice";
+import { ToDo } from "./TaskForm";
+
+interface UserManagementProps {
+  toDo: ToDo;
+  setToDoList: React.Dispatch<React.SetStateAction<ToDo[]>>;
+  allUsers: User[];
+  selectedUser: string;
+  setSelectedUser: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const UserManagement: FC<UserManagementProps> = ({
   toDo,
   setToDoList,
   allUsers,
   selectedUser,
   setSelectedUser,
 }) => {
-  const addUserToToDo = async (userEmail) => {
+  const addUserToToDo = async (userEmail: string) => {
     try {
       const toDoDocRef = doc(db, "toDoList", toDo.id);
       const toDoDoc = await getDoc(toDoDocRef);
@@ -51,7 +62,7 @@ const UserManagement = ({
       >
         <option value="">Вибрати співучасника</option>
         {allUsers.map((user) => (
-          <option key={user.id} value={user.email}>
+          <option key={user.id} value={user.email as string}>
             {user.email}
           </option>
         ))}

@@ -1,11 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, FC } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { ToDo } from "./TaskForm";
 
-const ToDoForm = ({ setToDoList }) => {
+interface ToDoFormProps {
+  setToDoList: React.Dispatch<React.SetStateAction<ToDo[]>>
+}
+
+const ToDoForm: FC<ToDoFormProps> = ({ setToDoList }) => {
   const [toDoName, setToDoName] = useState("");
 
-  const addNewToDo = async (e) => {
+  const addNewToDo = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const newDoc = await addDoc(collection(db, "toDoList"), {

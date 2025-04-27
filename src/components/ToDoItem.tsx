@@ -1,16 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, FC } from "react";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import TaskList from "./TaskList";
 import TaskForm from "./TaskForm";
 import UserManagement from "./UserManagement";
+import { ToDo, Task } from "./TaskForm";
+import {User} from "../store/slices/userSlice";
 
-const ToDoItem = ({ toDo, setToDoList, allUsers, role }) => {
+
+
+interface ToDoItemProps {
+  toDo: ToDo;
+  setToDoList: React.Dispatch<React.SetStateAction<ToDo[]>>;
+  allUsers: User[];
+  role: string;
+}
+
+const ToDoItem: FC<ToDoItemProps> = ({ toDo, setToDoList, allUsers, role }) => {
   const [isEditTextToDo, setIsEditTextToDo] = useState(false);
   const [editName, setEditName] = useState("");
   const [taskTexts, setTaskTexts] = useState({ name: "", description: "" });
   const [selectedUser, setSelectedUser] = useState("");
-  const [editingTask, setEditingTask] = useState({ taskIndex: null });
+  const [editingTask, setEditingTask] = useState<number | null>(null);
 
   const handleDeleteToDo = async () => {
     try {

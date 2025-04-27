@@ -1,8 +1,18 @@
-import React from "react";
+import React, { FC } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
-const FormComponent = ({ title, handleClick }) => {
+interface FormProps {
+  title: string;
+  handleClick: (email: string, password: string, name: string) => void;
+}
+interface FormValues {
+  name: string;
+  email: string;
+  password: string;
+}
+
+const FormComponent: FC<FormProps> = ({ title, handleClick }) => {
   const initialValues = {
     name: "",
     email: "",
@@ -21,7 +31,7 @@ const FormComponent = ({ title, handleClick }) => {
       .required("Пароль обов'язковий"),
   });
 
-  const onSubmit = (values) => {
+  const onSubmit = (values: FormValues) => {
     const { email, password, name } = values;
     handleClick(email, password, name);
   };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, FC } from "react";
 import Form from "./Form";
 import { useDispatch } from "react-redux";
 import { setUser } from "../store/slices/userSlice";
@@ -7,12 +7,14 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
+
+
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async (email, password) => {
+  const handleLogin = async (email: string, password: string) => {
     const auth = getAuth();
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
@@ -22,14 +24,14 @@ const Login = () => {
         throw new Error("User data not found in database");
       }
       const userData = userDoc.data();
-      console.log("userD", userData);
       dispatch(
         setUser({
           email: user.email,
           id: user.uid,
-          token: user.accessToken,
+          token: user.refreshToken,
           role: userData.role,
           name: userData.name,
+          isAuth: true,
         })
       );
 
@@ -38,7 +40,7 @@ const Login = () => {
         JSON.stringify({
           email: user.email,
           id: user.uid,
-          token: user.accessToken,
+          token: user.refreshToken,
           role: userData.role,
           name: userData.name,
         })
@@ -47,7 +49,7 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
-      setError(error.message);
+      setError(error instanceof Error ? error.message : "An error occurred");
     }
   };
 

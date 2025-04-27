@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, FC } from "react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
@@ -7,12 +7,12 @@ import { useDispatch } from "react-redux";
 import { setUser } from "../store/slices/userSlice";
 import { useNavigate } from "react-router-dom";
 
-const SignUp = () => {
+const SignUp: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [role, setRole] = useState("user");
 
-  const handleRegister = async (email, password, name) => {
+  const handleRegister = async (email: string, password: string, name: string) => {
     const auth = getAuth();
     try {
       const { user } = await createUserWithEmailAndPassword(
@@ -25,13 +25,14 @@ const SignUp = () => {
         id: user.uid,
         role: role,
         name: name,
-      };
+      } ;
 
       await setDoc(doc(db, "users", user.uid), userData);
       dispatch(
         setUser({
           ...userData,
-          token: user.accessToken,
+          token: user.refreshToken,
+          isAuth: true,
         })
       );
       localStorage.setItem(
@@ -39,7 +40,7 @@ const SignUp = () => {
         JSON.stringify({
           email: user.email,
           id: user.uid,
-          token: user.accessToken,
+          token: user.refreshToken,
           role: role,
           name: name,
         })
@@ -55,7 +56,7 @@ const SignUp = () => {
       <Form
         title="Реєстрація"
         handleClick={handleRegister}
-        showNameField={true}
+        // showNameField={true}
       />
 
       <div className="flex items-center justify-center">

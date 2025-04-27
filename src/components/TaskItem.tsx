@@ -1,12 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, FC } from "react";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { Task, ToDo } from "./TaskForm";
 
-const TaskItem = ({
+interface TaskItemProps {
+  task: Task;
+  index: number;
+  toDo: ToDo;
+  setToDoList: React.Dispatch<React.SetStateAction<ToDo[]>>;
+  editingTask: number | null;
+  handleToggleTask: (index: number) => void;
+  handleDeleteTask: (index: number) => void;
+  setTaskTexts: React.Dispatch<React.SetStateAction<Task>>;
+  setEditingTask: React.Dispatch<React.SetStateAction<number | null>>;
+  role: string;
+}
+
+const TaskItem: FC<TaskItemProps> = ({
   task,
   index,
   toDo,
-  setToDoList, // ⬅️ додаємо
+  setToDoList,
   editingTask,
   handleToggleTask,
   handleDeleteTask,
@@ -14,7 +28,10 @@ const TaskItem = ({
   setEditingTask,
   role,
 }) => {
-  const [editTaskText, setEditTaskText] = useState({
+  const [editTaskText, setEditTaskText] = useState<{
+    name: string;
+    description: string;
+  }>({
     name: task.name,
     description: task.description,
   });
@@ -43,7 +60,7 @@ const TaskItem = ({
         )
       );
 
-      setEditingTask({ taskIndex: null });
+      setEditingTask(null);
       setEditTaskText({ name: "", description: "" });
     } catch (error) {
       console.error("Помилка при збереженні редагування задачі:", error);
@@ -55,7 +72,7 @@ const TaskItem = ({
     handleDeleteTask(index);
   };
 
-  if (editingTask.taskIndex === index) {
+  if (editingTask === index) {
     return (
       <div className="flex flex-col gap-2 border-b py-2">
         <input
@@ -106,7 +123,7 @@ const TaskItem = ({
             <button
               className="w-8 h-8 flex items-center justify-center rounded-full text-white bg-green-600 hover:bg-green-700 hover:scale-110 transition"
               onClick={() => {
-                setEditingTask({ taskIndex: index });
+                setEditingTask(index);
                 setEditTaskText({
                   name: task.name,
                   description: task.description,

@@ -6,10 +6,11 @@ import { useDispatch } from "react-redux";
 import { setUser } from "../store/slices/userSlice";
 import Header from "../components/Header";
 import ToDo from "../components/ToDo";
+
 import Container from "../components/Container";
 
 const HomePage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch(); 
   const [loading, setLoading] = useState(true);
   const { isAuth, email, role, name } = useAuth();
   
@@ -43,7 +44,7 @@ const HomePage = () => {
       <Header
         isAuth={isAuth}
         email={email}
-        role={role}
+        role={role as string}
         handleLogout={handleLogout}
         userName={name}
       />

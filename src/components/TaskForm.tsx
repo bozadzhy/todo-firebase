@@ -1,8 +1,33 @@
-import React from "react";
+import React, { FC } from "react";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
-const TaskForm = ({ toDo, setToDoList, taskTexts, setTaskTexts }) => {
+export interface Task {
+  name: string;
+  description: string;
+  completed?: boolean;
+}
+
+ export interface ToDo {
+  id: string;
+  tasks: Task[];
+  name: string;
+  users: string[] ;
+}
+
+interface TaskFormProps {
+  toDo: ToDo;
+  setToDoList: React.Dispatch<React.SetStateAction<ToDo[]>>; 
+  taskTexts: Task;
+  setTaskTexts: React.Dispatch<React.SetStateAction<Task>>; 
+}
+
+const TaskForm: FC<TaskFormProps> = ({
+  toDo,
+  setToDoList,
+  taskTexts,
+  setTaskTexts,
+}) => {
   const addTaskToToDo = async () => {
     try {
       const toDoDocRef = doc(db, "toDoList", toDo.id);
@@ -34,9 +59,7 @@ const TaskForm = ({ toDo, setToDoList, taskTexts, setTaskTexts }) => {
         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
         placeholder="Назва задачі"
         value={taskTexts.name}
-        onChange={(e) =>
-          setTaskTexts({ ...taskTexts, name: e.target.value })
-        }
+        onChange={(e) => setTaskTexts({ ...taskTexts, name: e.target.value })}
       />
       <input
         type="text"

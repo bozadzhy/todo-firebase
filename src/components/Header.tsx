@@ -1,7 +1,22 @@
-import React from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
-const Header = ({ isAuth, email, role, handleLogout, userName }) => {
+interface HeaderProps {
+  isAuth: boolean;
+  email: string | null; 
+  role: string;
+  handleLogout: () => void;
+  userName: string | null;
+}
+
+
+const Header: FC<HeaderProps> = ({
+  isAuth,
+  email,
+  role,
+  handleLogout,
+  userName,
+}) => {
   return (
     <header className="bg-white shadow-sm">
       <div className=" mx-auto px-4 py-3 flex justify-between items-center">
