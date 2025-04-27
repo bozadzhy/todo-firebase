@@ -197,11 +197,60 @@ const ToDo = () => {
 
       setSelectedUsers((prev) => ({
         ...prev,
-        [toDoId]: "", // очищаем селект
+        [toDoId]: "",
       }));
     } catch (error) {
       console.error("Помилка при додаванні користувача до списку:", error);
       alert("Не вдалося додати користувача");
+    }
+  };
+
+  const handleToggleTask = async (toDoId, taskIndex) => {
+    try {
+      const toDoDocRef = doc(db, "toDoList", toDoId);
+      const toDoDoc = await getDoc(toDoDocRef);
+
+      if (!toDoDoc.exists()) {
+        throw new Error("Список задач не знайдено");
+      }
+
+      const tasks = [...toDoDoc.data().tasks];
+      const task = tasks[taskIndex];
+
+      const updatedTask = { ...task, completed: !task.completed };
+      tasks[taskIndex] = updatedTask;
+
+      await updateDoc(toDoDocRef, { tasks });
+
+      setToDoList((prev) =>
+        prev.map((toDo) => (toDo.id === toDoId ? { ...toDo, tasks } : toDo))
+      );
+    } catch (error) {
+      console.error("Помилка при зміні статусу задачі:", error);
+      alert("Не вдалося змінити статус задачі");
+    }
+  };
+
+  const handleDeleteTask = async (toDoId, taskIndex) => {
+    try {
+      const toDoDocRef = doc(db, "toDoList", toDoId);
+      const toDoDoc = await getDoc(toDoDocRef);
+
+      if (!toDoDoc.exists()) {
+        throw new Error("Список задач не знайдено");
+      }
+
+      const tasks = [...toDoDoc.data().tasks];
+      tasks.splice(taskIndex, 1);
+
+      await updateDoc(toDoDocRef, { tasks });
+
+      setToDoList((prev) =>
+        prev.map((toDo) => (toDo.id === toDoId ? { ...toDo, tasks } : toDo))
+      );
+    } catch (error) {
+      console.error("Помилка при видаленні задачі:", error);
+      alert("Не вдалося видалити задачу");
     }
   };
 
@@ -271,9 +320,9 @@ const ToDo = () => {
                   </button>
                 </div>
               ) : (
-                <p className="text-lg font-semibold text-gray-800 mb-3">
-                  {toDo.name}
-                </p>
+                <h2 className="text-lg font-semibold text-blue-800 mb-3 uppercase">
+                  {toDo.name}:
+                </h2>
               )}
             </div>
 
@@ -324,26 +373,44 @@ const ToDo = () => {
                     ) : (
                       <div className="flex items-start justify-between">
                         <div className="flex flex-col items-start">
-                          <span className="font-semibold">{task.name}</span>
+                          <span className="flex items-center gap-2 font-semibold">
+                            <input
+                              type="checkbox"
+                              checked={task.completed || false}
+                              onChange={() => handleToggleTask(toDo.id, index)}
+                            />
+
+                            {task.name}
+                          </span>
                           <span className="text-gray-500 text-sm">
                             {task.description}
                           </span>
                         </div>
-                        <button
-                          className="w-8 h-8 flex items-center justify-center rounded-full text-white bg-green-600 text-lg"
-                          onClick={() => {
-                            handleEditTaskText(toDo.id, index);
-                            setTaskTexts((prev) => ({
-                              ...prev,
-                              [toDo.id]: {
-                                name: task.name,
-                                description: task.description,
-                              },
-                            }));
-                          }}
-                        >
-                          ✎
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="w-8 h-8 flex items-center justify-center rounded-full text-white bg-green-600 text-lg"
+                            onClick={() => {
+                              handleEditTaskText(toDo.id, index);
+                              setTaskTexts((prev) => ({
+                                ...prev,
+                                [toDo.id]: {
+                                  name: task.name,
+                                  description: task.description,
+                                },
+                              }));
+                            }}
+                          >
+                            ✎
+                          </button>
+                          <button
+                            className="w-8 h-8 flex items-center justify-center rounded-full text-red-600 text-4xl"
+                            onClick={() => {
+                              handleDeleteTask(toDo.id, index);
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
