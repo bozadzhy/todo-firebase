@@ -83,6 +83,8 @@ const ToDo = () => {
     }
   };
 
+  const handleEditTaskText = (toDoId, taskId) => {};
+
   const addNewToDo = async (e) => {
     e.preventDefault();
     try {
@@ -239,12 +241,21 @@ const ToDo = () => {
                 toDo.tasks.map((task, index) => (
                   <div
                     key={index}
-                    className="flex flex-col items-start border-b py-2"
+                    className="flex items-start justify-between border-b py-2"
                   >
-                    <span className="font-semibold">{task.name}</span>
-                    <span className="text-gray-500 text-sm">
-                      {task.description}
-                    </span>
+                    <div className="flex flex-col items-start">
+                      <span className="font-semibold">{task.name}</span>
+                      <span className="text-gray-500 text-sm">
+                        {task.description}
+                      </span>
+                    </div>
+
+                    <button
+                      className="w-8 h-8 flex items-center justify-center rounded-full text-white bg-green-600 text-lg"
+                      onClick={() => handleEditTaskText(toDo.id, task.id)}
+                    >
+                      ✎
+                    </button>
                   </div>
                 ))
               ) : (
