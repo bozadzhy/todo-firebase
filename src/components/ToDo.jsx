@@ -1,156 +1,179 @@
 import React, { useState, useEffect } from "react";
-import { updateDoc, doc, getDoc } from "firebase/firestore";
+import {
+  updateDoc,
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "../firebase";
-import { useAuth } from "../hooks/use-auth";
 
 const ToDo = () => {
-  const [text, setText] = useState(""); 
-  const [tasks, setTasks] = useState([]); 
-  const [isEditing, setIsEditing] = useState(false); 
-  const [editIndex, setEditIndex] = useState(null); 
-  const [editText, setEditText] = useState(""); 
-  const { id } = useAuth();
+  const [toDoName, setToDoName] = useState("");
+  const [toDoList, setToDoList] = useState([]);
+  const [taskTexts, setTaskTexts] = useState({});
+
+  console.log("todoList", toDoList);
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchToDos = async () => {
       try {
-        const userDocRef = doc(db, "users", id);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          setTasks(userDoc.data().tasks || []);
-        } else {
-          console.log("Документ користувача не знайдено");
-        }
+        const toDoCollectionRef = collection(db, "toDoList");
+        const toDoSnapshot = await getDocs(toDoCollectionRef);
+
+        const toDos = toDoSnapshot.docs.map((doc) => ({
+          id: doc.id, // сохраняем id документа
+          ...doc.data(), // и все его данные
+        }));
+        setToDoList(toDos);
       } catch (error) {
-        console.error("Помилка при завантаженні задач:", error);
+        console.error("Помилка при завантаженні списків задач:", error);
       }
     };
 
-    if (id) {
-      fetchTasks();
-    }
-  }, [id]);
+    fetchToDos();
+  }, []);
 
-  const addTask = async (e) => {
+  const addNewToDo = async (e) => {
     e.preventDefault();
-    if (text.trim() === "") return;
-
-    const newTasks = [...tasks, text];
     try {
-      await updateDoc(doc(db, "users", id), {
-        tasks: newTasks,
+      const newDoc = await addDoc(collection(db, "toDoList"), {
+        name: toDoName,
+        tasks: [],
       });
-      setText("");
-      setTasks(newTasks);
+
+      setToDoList((prev) => [
+        ...prev,
+        { id: newDoc.id, name: toDoName, tasks: [] },
+      ]);
+      setToDoName("");
     } catch (error) {
-      console.error("Помилка при додаванні задачі:", error);
-      alert("Не вдалося додати задачу");
+      console.error("Помилка при додаванні списку задач:", error);
+      alert("Не вдалося додати список задач");
     }
   };
 
-  const deleteTask = async (taskToDelete) => {
-    const newTasks = tasks.filter((task) => task !== taskToDelete);
+  const addTaskToToDo = async (toDoId, newTask) => {
     try {
-      await updateDoc(doc(db, "users", id), {
-        tasks: newTasks,
-      });
-      setTasks(newTasks); 
-    } catch (error) {
-      console.error("Помилка при видаленні задачі:", error);
-      alert("Не вдалося видалити задачу");
-    }
-  };
+      const toDoDocRef = doc(db, "toDoList", toDoId);
+      const toDoDoc = await getDoc(toDoDocRef);
 
-  const editTask = (index) => {
-    setIsEditing(true);
-    setEditIndex(index);
-    setEditText(tasks[index]);
-  };
+      if (!toDoDoc.exists()) {
+        throw new Error("Список задач не знайдено");
+      }
 
-  const saveTask = async () => {
-    const updatedTasks = tasks.map((task, index) =>
-      index === editIndex ? editText : task
-    );
-    try {
-      await updateDoc(doc(db, "users", id), {
-        tasks: updatedTasks,
-      });
-      setTasks(updatedTasks); 
-      setIsEditing(false); 
-      setEditIndex(null); 
-      setEditText(""); 
+      const updatedTasks = [...toDoDoc.data().tasks, newTask];
+      await updateDoc(toDoDocRef, { tasks: updatedTasks });
+
+      setToDoList((prev) =>
+        prev.map((toDo) =>
+          toDo.id === toDoId ? { ...toDo, tasks: updatedTasks } : toDo
+        )
+      );
     } catch (error) {
-      console.error("Помилка при збереженні задачі:", error);
-      alert("Не вдалося зберегти задачу");
+      console.error("Помилка при додаванні задачі до списку:", error);
+      alert("Не вдалося додати задачу до списку");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border">
-      <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Список справ</h1>
-
-      <form onSubmit={addTask} className="flex gap-2 mb-6">
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          type="text"
-          placeholder="Введіть нову задачу"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-green-600 text-white border px-4 py-2 font-medium hover:bg-green-700 transition-colors"
-        >
-          Додати
-        </button>
-      </form>
-
-      <ul className="space-y-2">
-        {tasks.map((task, index) => (
-          <li
-            key={index}
-            className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg"
+    <div className="flex items-center flex-col mt-6">
+      <div className="flex items-center flex-col p-4 border rounded-lg  mb-4">
+        <form onSubmit={addNewToDo} className="flex gap-2">
+          <input
+            value={toDoName}
+            onChange={(e) => setToDoName(e.target.value)}
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            type="text"
+            placeholder="Назва списку задач"
+            required
+          />
+          <button
+            type="submit"
+            className="bg-red-600 rounded-lg text-white border px-4 py-2 font-medium hover:bg-red-700 transition-colors"
           >
-            {isEditing && editIndex === index ? (
-              <div className="flex gap-2">
+            + список
+          </button>
+        </form>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {toDoList.map((toDo) => (
+          <div key={toDo.id} className="bg-white rounded-lg shadow-md p-4 mb-4">
+            <p className="text-lg font-semibold text-gray-800 mb-3">
+              {toDo.name}
+            </p>
+
+            <div className="space-y-2 mb-4">
+              {toDo.tasks.length > 0 ? (
+                toDo.tasks.map((task, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col items-start border-b py-2"
+                  >
+                    <span className="font-semibold">{task.name}</span>
+                    <span className="text-gray-500 text-sm">
+                      {task.description}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500">Поки немає завдань</p>
+              )}
+
+              <div className="flex items-center flex-col mt-4 gap-2">
                 <input
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  className="border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   type="text"
+                  className="w-full border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Назва задачі"
+                  value={taskTexts[toDo.id]?.name || ""}
+                  onChange={(e) =>
+                    setTaskTexts((prev) => ({
+                      ...prev,
+                      [toDo.id]: {
+                        ...prev[toDo.id],
+                        name: e.target.value,
+                      },
+                    }))
+                  }
                 />
+
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded px-3 py-2 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Опишіть задачу"
+                  value={taskTexts[toDo.id]?.description || ""}
+                  onChange={(e) =>
+                    setTaskTexts((prev) => ({
+                      ...prev,
+                      [toDo.id]: {
+                        ...prev[toDo.id],
+                        description: e.target.value,
+                      },
+                    }))
+                  }
+                />
+
                 <button
-                  onClick={saveTask}
-                  className="bg-green-600 text-white border px-4 py-2 font-medium hover:bg-green-700"
+                  onClick={() => {
+                    const task = taskTexts[toDo.id];
+                    if (task?.name?.trim()) {
+                      addTaskToToDo(toDo.id, task);
+                      setTaskTexts((prev) => ({
+                        ...prev,
+                        [toDo.id]: { name: "", description: "" },
+                      }));
+                    }
+                  }}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded whitespace-nowrap"
                 >
-                  Зберегти
+                  + Додати завдання
                 </button>
               </div>
-            ) : (
-              <>
-                <span className="text-gray-800">{task}</span>
-                <button
-                  onClick={() => editTask(index)}
-                  className="text-green-600 hover:text-green-800 transition-colors"
-                >
-                  Редагувати
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => deleteTask(task)}
-              className="text-red-600 hover:text-red-800 transition-colors"
-            >
-              Видалити
-            </button>
-          </li>
+            </div>
+          </div>
         ))}
-      </ul>
-
-      {tasks.length === 0 && (
-        <p className="text-center text-gray-500 mt-4">Список справ порожній</p>
-      )}
+      </div>
     </div>
   );
 };

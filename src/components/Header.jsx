@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const Header = ({ isAuth, email, role, handleLogout, userName }) => {
-  console.log("name", userName);
   return (
     <header className="bg-white shadow-sm">
       <div className=" mx-auto px-4 py-3 flex justify-between items-center">

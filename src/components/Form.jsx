@@ -6,7 +6,7 @@ const Form = ({ title, handleClick }) => {
   const [name, setName] = useState("");
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white  flex flex-col gap-4">
+    <div className="max-w-md mx-auto p-6 bg-white  flex flex-col gap-4">
       <h2 className="text-2xl font-bold text-center">{title}</h2>
       <input
         type="text"

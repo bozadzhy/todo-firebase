@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { setUser } from "../store/slices/userSlice";
 import Header from "../components/Header";
 import ToDo from "../components/ToDo";
+import Container from "../components/Container";
 
 const HomePage = () => {
   const [loading, isLoading] = useState(true);
@@ -47,7 +48,9 @@ const HomePage = () => {
         userName={name}
       />
       <main>
-        <ToDo />
+        <Container>
+          <ToDo />
+        </Container>
       </main>
     </>
   );
